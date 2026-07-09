@@ -92,6 +92,46 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Chromatic Bookstore production collections.
+    match /products/{productId} {
+      allow read: if resource.data.visibility == 'public' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.uid == request.auth.uid)
+        || (isSignedIn() && resource.data.customerEmail == request.auth.token.email);
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /customers/{customerId} {
+      allow read, update: if isAdmin() || isOwner(customerId);
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    match /downloads/{downloadId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /licenses/{licenseId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /checkoutIntents/{checkoutIntentId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /adminAuditLogs/{logId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if isOwnerLevel();
+    }
+
     // MFA and recovery-code storage is backend-only. Add project-specific
     // callable/functions access rather than client rules when enabling it.
     match /emailOtpCodes/{doc} {

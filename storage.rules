@@ -20,6 +20,17 @@ service firebase.storage {
       allow read, write: if isAdmin();
     }
 
+    // Source PDFs and sellable digital products. Admins can upload/manage;
+    // customer delivery should use backend-created signed links or download docs.
+    match /products/{productId}/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    match /downloads/{uid}/{allPaths=**} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
     // Deny everything else by default.
     match /{allPaths=**} {
       allow read, write: if false;

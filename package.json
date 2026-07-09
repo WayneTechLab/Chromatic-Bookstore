@@ -34,6 +34,7 @@
     "ci:security": "node .SYSTEMX/scripts/security-check.mjs && node .SYSTEMX/scripts/account-level-check.mjs && node .SYSTEMX/scripts/auth-mfa-readiness-check.mjs"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^9.9.0",
     "firebase": "^12.14.0",
     "lucide-react": "^0.484.0",
     "playwright": "^1.61.1",
