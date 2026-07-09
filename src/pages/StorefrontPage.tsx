@@ -1,0 +1,376 @@
+import { useState, type FormEvent } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import {
+  CheckCircle2,
+  CreditCard,
+  FileUp,
+  Filter,
+  Heart,
+  LayoutDashboard,
+  Lock,
+  Mail,
+  Search,
+  Settings,
+  ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  UploadCloud,
+} from 'lucide-react'
+import { useAccountLevel } from '@/auth/useAccountLevel'
+import { ACCOUNT_LEVELS, type AccountLevel } from '@/auth/accountLevels'
+
+type Product = {
+  id: string
+  title: string
+  author: string
+  price: number
+  category: 'Kids' | 'Teens' | 'Adults' | 'Pro'
+  pages: number
+  license: string
+  description: string
+  status: 'Live' | 'Draft' | 'Review'
+}
+
+const products: Product[] = [
+  { id: 'kids-safari', title: 'Cute Safari Animals Pack', author: 'ArtbyLucy', price: 4.99, category: 'Kids', pages: 15, license: 'Personal PDF', description: 'Bold animal outlines for early creative play.', status: 'Live' },
+  { id: 'magic-castles', title: 'Fairytale Castles & Dragons', author: 'Ink & Quill Studios', price: 5.5, category: 'Kids', pages: 20, license: 'Personal PDF', description: 'Castles, smiling dragons, and starry skies.', status: 'Live' },
+  { id: 'anime-techwear', title: 'Anime Legends Techwear', author: 'Hiroshi Sato', price: 12.5, category: 'Teens', pages: 25, license: 'Personal PDF', description: 'High contrast character sheets with modern style.', status: 'Live' },
+  { id: 'vaporwave-futures', title: 'Vaporwave Neon Futures', author: 'SynthWave Studio', price: 14.5, category: 'Teens', pages: 20, license: 'Personal PDF', description: 'Retro grids, cassettes, chrome, and neon horizons.', status: 'Review' },
+  { id: 'mandala-master', title: 'Mandala Meditation Masterpieces', author: 'ZenFlow Artistry', price: 10.99, category: 'Adults', pages: 40, license: 'Personal PDF', description: 'Intricate geometric mandalas for focus and calm.', status: 'Live' },
+  { id: 'city-skylines', title: 'Architectural Wonders & Skylines', author: 'ArchLine Designs', price: 15.99, category: 'Adults', pages: 25, license: 'Personal PDF', description: 'Landmarks, streets, and architectural detail.', status: 'Draft' },
+  { id: 'pro-svg-mandala', title: 'Pro Geometric Mandala SVGs', author: 'Master Vector', price: 49.99, category: 'Pro', pages: 50, license: 'Commercial SVG/PDF', description: 'Layered SVG source files with commercial license.', status: 'Live' },
+  { id: 'steampunk-blueprints', title: 'Steampunk Blueprint Schematics', author: 'Cogs & Copper', price: 29.5, category: 'Pro', pages: 10, license: 'Commercial PDF/PNG', description: 'Printable airship, gear, and machinery layouts.', status: 'Live' },
+]
+
+const orders = [
+  { id: 'CB-1029', customer: 'maria@example.com', product: 'Mandala Meditation Masterpieces', amount: '$10.99', status: 'Paid', date: 'Jul 9' },
+  { id: 'CB-1028', customer: 'studio@printlab.test', product: 'Pro Geometric Mandala SVGs', amount: '$49.99', status: 'Paid', date: 'Jul 9' },
+  { id: 'CB-1027', customer: 'parent@example.com', product: 'Cute Safari Animals Pack', amount: '$4.99', status: 'Delivered', date: 'Jul 8' },
+]
+
+function pageTitle(slug: string | undefined) {
+  if (!slug) return 'Store'
+  return slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function ProductCard({ product }: { product: Product }) {
+  return (
+    <article className="rounded-lg border border-white/10 bg-slate-950/65 p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">{product.category}</p>
+          <h3 className="mt-2 text-lg font-black text-white">{product.title}</h3>
+          <p className="mt-1 text-sm text-slate-400">by {product.author}</p>
+        </div>
+        <button className="rounded-full border border-white/10 p-2 text-slate-300 hover:bg-white/10" title="Save">
+          <Heart className="h-4 w-4" />
+        </button>
+      </div>
+      <p className="mt-4 min-h-12 text-sm leading-6 text-slate-300">{product.description}</p>
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
+        <span className="rounded-full bg-white/8 px-3 py-1">{product.pages} pages</span>
+        <span className="rounded-full bg-white/8 px-3 py-1">{product.license}</span>
+      </div>
+      <div className="mt-5 flex items-center justify-between gap-3">
+        <span className="text-xl font-black text-white">${product.price.toFixed(2)}</span>
+        <button className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-100">
+          <ShoppingCart className="h-4 w-4" />
+          Buy PDF
+        </button>
+      </div>
+    </article>
+  )
+}
+
+function AdminLogin() {
+  const { level, definition, setLevel } = useAccountLevel()
+
+  return (
+    <section className="mx-auto max-w-5xl px-4 py-10">
+      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">Secure back office</p>
+          <h1 className="mt-3 text-4xl font-black text-white">Admin login for bookstore operations</h1>
+          <p className="mt-4 text-slate-300">
+            Use the Level 4 or Level 5 operator role to unlock CMS, CRM, upload, and billing workspaces. This is wired as a local demo gate until Firebase Auth custom claims are connected.
+          </p>
+          <div className="mt-6 rounded-lg border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
+            Production target: Firebase Auth + MFA + custom claims, Firestore rules, Storage rules for PDF assets, and Stripe Checkout/Billing Portal.
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <div className="flex items-center gap-3">
+            <Lock className="h-5 w-5 text-cyan-200" />
+            <h2 className="text-xl font-black text-white">Operator access</h2>
+          </div>
+          <div className="mt-5 grid gap-3">
+            {ACCOUNT_LEVELS.map((item) => (
+              <button
+                key={item.level}
+                onClick={() => setLevel(item.level as AccountLevel)}
+                className={`rounded-lg border p-4 text-left transition ${
+                  level === item.level ? 'border-cyan-300/40 bg-cyan-300/10' : 'border-white/10 bg-slate-950/50 hover:bg-white/8'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-bold text-white">Level {item.level}: {item.label}</span>
+                  {level === item.level && <CheckCircle2 className="h-4 w-4 text-cyan-200" />}
+                </div>
+                <p className="mt-1 text-sm text-slate-400">{item.description}</p>
+              </button>
+            ))}
+          </div>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-white/10 bg-slate-950/60 p-4">
+            <span className="text-sm text-slate-300">Current role: {definition.label}</span>
+            <Link to="/admin-inventory" className="rounded-md bg-white px-4 py-2 text-sm font-bold text-slate-950">
+              Enter Admin
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function AdminDashboard({ view }: { view: 'inventory' | 'orders' | 'billing' }) {
+  const { capabilities } = useAccountLevel()
+
+  if (!capabilities.canAccessAdmin) {
+    return (
+      <section className="mx-auto max-w-3xl px-4 py-16">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+          <ShieldCheck className="mx-auto h-10 w-10 text-amber-200" />
+          <h1 className="mt-4 text-3xl font-black text-white">Admin access required</h1>
+          <p className="mt-3 text-slate-300">Log in with Level 4 Admin or Level 5 Owner access to manage PDFs, CMS, CRM, and billing.</p>
+          <Link to="/admin" className="mt-6 inline-flex rounded-md bg-white px-5 py-3 font-bold text-slate-950">
+            Go to Admin Login
+          </Link>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-8">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">Admin workspace</p>
+          <h1 className="mt-2 text-3xl font-black text-white">
+            {view === 'inventory' ? 'CMS and PDF Library' : view === 'orders' ? 'CRM and Orders' : 'Billing Operations'}
+          </h1>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/admin-inventory" className="rounded-md border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/10">CMS</Link>
+          <Link to="/admin-orders" className="rounded-md border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/10">CRM</Link>
+          <Link to="/admin-billing" className="rounded-md border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/10">Billing</Link>
+        </div>
+      </div>
+
+      {view === 'inventory' && (
+        <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+          <form className="rounded-lg border border-white/10 bg-white/5 p-5">
+            <div className="flex items-center gap-3">
+              <UploadCloud className="h-5 w-5 text-cyan-200" />
+              <h2 className="font-black text-white">Upload PDF product</h2>
+            </div>
+            {['Title', 'Author', 'Price', 'Category', 'License'].map((label) => (
+              <label key={label} className="mt-4 block text-sm font-semibold text-slate-300">
+                {label}
+                <input className="mt-2 w-full rounded-md border border-white/10 bg-slate-950/70 px-3 py-2 text-white outline-none focus:border-cyan-300/50" />
+              </label>
+            ))}
+            <label className="mt-4 block text-sm font-semibold text-slate-300">
+              PDF file
+              <div className="mt-2 flex items-center justify-center rounded-lg border border-dashed border-white/20 bg-slate-950/70 p-8 text-slate-400">
+                <FileUp className="mr-2 h-5 w-5" />
+                Drop PDF or select file
+              </div>
+            </label>
+            <button type="button" className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-white px-4 py-3 font-bold text-slate-950">
+              <UploadCloud className="h-4 w-4" />
+              Publish to CMS
+            </button>
+          </form>
+
+          <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+            <h2 className="font-black text-white">Product CMS</h2>
+            <div className="mt-4 overflow-hidden rounded-lg border border-white/10">
+              {products.map((product) => (
+                <div key={product.id} className="grid gap-3 border-b border-white/10 p-4 last:border-b-0 md:grid-cols-[1fr_auto_auto] md:items-center">
+                  <div>
+                    <p className="font-bold text-white">{product.title}</p>
+                    <p className="text-sm text-slate-400">{product.category} / {product.license}</p>
+                  </div>
+                  <span className="text-sm font-bold text-slate-200">${product.price.toFixed(2)}</span>
+                  <span className="rounded-full bg-white/8 px-3 py-1 text-xs font-bold text-cyan-100">{product.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {view === 'orders' && (
+        <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
+          <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+            <h2 className="font-black text-white">Orders and customers</h2>
+            <div className="mt-4 grid gap-3">
+              {orders.map((order) => (
+                <div key={order.id} className="rounded-lg border border-white/10 bg-slate-950/60 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="font-bold text-white">{order.id} / {order.customer}</p>
+                    <span className="text-sm font-bold text-cyan-100">{order.amount}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-400">{order.product} / {order.status} / {order.date}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+            <h2 className="font-black text-white">CRM actions</h2>
+            <div className="mt-4 grid gap-3">
+              {['Send receipt', 'Grant download link', 'Issue support credit', 'Tag pro customer'].map((action) => (
+                <button key={action} className="rounded-md border border-white/10 bg-slate-950/60 px-4 py-3 text-left text-sm font-semibold text-slate-200 hover:bg-white/10">
+                  {action}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {view === 'billing' && (
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+            ['Stripe Checkout', 'Create one-time PDF purchases and bundled pack checkout sessions.'],
+            ['Billing Portal', 'Let customers update payment methods and download invoices.'],
+            ['Tax and license rules', 'Track commercial licenses, discounts, and regional tax settings.'],
+          ].map(([title, body]) => (
+            <div key={title} className="rounded-lg border border-white/10 bg-white/5 p-5">
+              <CreditCard className="h-6 w-6 text-cyan-200" />
+              <h2 className="mt-4 font-black text-white">{title}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">{body}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function Storefront() {
+  const [query, setQuery] = useState('')
+  const [category, setCategory] = useState('All')
+  const filtered = products.filter((product) => {
+    const matchesCategory = category === 'All' || product.category === category
+    const q = query.toLowerCase()
+    const matchesQuery = !q || product.title.toLowerCase().includes(q) || product.author.toLowerCase().includes(q)
+    return matchesCategory && matchesQuery
+  })
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-8">
+      <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
+        <aside className="space-y-5">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">Chromatic Bookstore</p>
+            <h1 className="mt-3 text-4xl font-black text-white">Printable PDF coloring books ready to sell</h1>
+            <p className="mt-4 text-slate-300">Instant download products, commercial packs, admin CMS, and billing workflow surfaces in one app.</p>
+          </div>
+          <div className="grid gap-2">
+            <Link to="/admin" className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-3 font-bold text-slate-950">
+              <LayoutDashboard className="h-4 w-4" />
+              Admin Login
+            </Link>
+            <Link to="/admin-inventory" className="inline-flex items-center justify-center gap-2 rounded-md border border-white/10 px-4 py-3 font-bold text-white hover:bg-white/10">
+              <Settings className="h-4 w-4" />
+              Manage CMS
+            </Link>
+          </div>
+          <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+            <p className="font-bold text-white">Backend readiness</p>
+            <ul className="mt-3 space-y-2 text-sm text-slate-300">
+              <li>Firebase Auth + MFA admin roles</li>
+              <li>Firestore product/order/customer collections</li>
+              <li>Storage PDF upload and download links</li>
+              <li>Stripe checkout and billing portal</li>
+            </ul>
+          </div>
+        </aside>
+
+        <div>
+          <div className="mb-5 flex flex-wrap items-center gap-3">
+            <div className="relative min-w-64 flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search books, packs, or artists" className="w-full rounded-md border border-white/10 bg-slate-950/70 py-3 pl-10 pr-4 text-white outline-none focus:border-cyan-300/50" />
+            </div>
+            <div className="flex items-center gap-2 rounded-md border border-white/10 bg-slate-950/70 px-3 py-2">
+              <Filter className="h-4 w-4 text-slate-400" />
+              <select value={category} onChange={(event) => setCategory(event.target.value)} className="bg-transparent text-sm font-semibold text-white outline-none">
+                {['All', 'Kids', 'Teens', 'Adults', 'Pro'].map((item) => <option key={item}>{item}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {filtered.map((product) => <ProductCard key={product.id} product={product} />)}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function InfoPage({ title }: { title: string }) {
+  const [sent, setSent] = useState(false)
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setSent(true)
+  }
+
+  return (
+    <section className="mx-auto max-w-5xl px-4 py-12">
+      <div className="mb-8">
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">{title}</p>
+        <h1 className="mt-3 text-4xl font-black text-white">{title === 'Contact' ? 'Customer support and wholesale inquiries' : `${title} for Chromatic Bookstore`}</h1>
+      </div>
+      {title === 'Contact' ? (
+        <form onSubmit={submit} className="grid gap-4 rounded-lg border border-white/10 bg-white/5 p-5">
+          <input required placeholder="Name" className="rounded-md border border-white/10 bg-slate-950/70 px-3 py-3 text-white outline-none" />
+          <input required type="email" placeholder="Email" className="rounded-md border border-white/10 bg-slate-950/70 px-3 py-3 text-white outline-none" />
+          <textarea required rows={5} placeholder="Message" className="rounded-md border border-white/10 bg-slate-950/70 px-3 py-3 text-white outline-none" />
+          <button className="inline-flex w-fit items-center gap-2 rounded-md bg-white px-5 py-3 font-bold text-slate-950">
+            <Mail className="h-4 w-4" />
+            Send
+          </button>
+          {sent && <p className="text-sm font-semibold text-cyan-100">Message captured in demo mode.</p>}
+        </form>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-3">
+          {['Customer trust', 'Instant delivery', 'Creator licensing'].map((item) => (
+            <div key={item} className="rounded-lg border border-white/10 bg-white/5 p-5">
+              <Sparkles className="h-5 w-5 text-cyan-200" />
+              <h2 className="mt-4 font-black text-white">{item}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">Professional bookstore content surface ready for CMS-backed copy.</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+export function StorefrontPage() {
+  const { pageId } = useParams()
+
+  if (pageId === 'admin') return <AdminLogin />
+  if (pageId === 'admin-inventory') return <AdminDashboard view="inventory" />
+  if (pageId === 'admin-orders') return <AdminDashboard view="orders" />
+  if (pageId === 'admin-billing') return <AdminDashboard view="billing" />
+  if (pageId === 'about' || pageId === 'contact' || pageId === 'faq' || pageId === 'terms' || pageId === 'privacy') {
+    return <InfoPage title={pageTitle(pageId)} />
+  }
+
+  return <Storefront />
+}

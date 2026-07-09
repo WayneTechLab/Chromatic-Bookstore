@@ -85,8 +85,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -z "$FIREBASE_PROJECT" ]]; then
+  FIREBASE_PROJECT=$(node -e "try{const p=require('./.firebaserc').projects.default; if(p) console.log(p)}catch(e){}" 2>/dev/null || true)
+fi
+if [[ -z "$FIREBASE_PROJECT" || "$FIREBASE_PROJECT" == "your-firebase-project-id" || "$FIREBASE_PROJECT" == "YOUR_FIREBASE_PROJECT_ID" ]]; then
+  err "Firebase project is not configured. Set .firebaserc default or pass --project <id>."
+  exit 1
+fi
+
 if [[ $ROLLBACK_INFO -eq 1 ]]; then
-  PROJECT_LABEL="${FIREBASE_PROJECT:-$(node -e "try{console.log(require('./.firebaserc').projects.default)}catch(e){console.log('your-firebase-project-id')}" 2>/dev/null)}"
+  PROJECT_LABEL="$FIREBASE_PROJECT"
   cat <<EOF
 Safe Firebase Hosting rollback
   List releases: firebase hosting:releases:list --project $PROJECT_LABEL
@@ -235,7 +243,7 @@ if [[ $DO_DEPLOY -eq 1 ]]; then
   " 2>/dev/null || echo hosting)
 
   FB_ARGS=("deploy" "--only" "$FB_TARGETS")
-  [[ -n "$FIREBASE_PROJECT" ]] && FB_ARGS+=("--project" "$FIREBASE_PROJECT")
+  FB_ARGS+=("--project" "$FIREBASE_PROJECT")
   [[ $DRY_RUN -eq 1 ]] && FB_ARGS+=("--dry-run")
   export FUNCTIONS_DISCOVERY_TIMEOUT="${FUNCTIONS_DISCOVERY_TIMEOUT:-60000}"
 

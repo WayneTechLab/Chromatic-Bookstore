@@ -7,13 +7,13 @@ export function LoginPage() {
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
       <div className="max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
+        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200/70">
           Unified Login
         </p>
-        <h1 className="mt-4 text-3xl font-bold text-neutral-950 sm:text-5xl">
+        <h1 className="mt-4 text-3xl font-black text-white sm:text-5xl">
           Account levels for Firebase, Playwright, and setup checks.
         </h1>
-        <p className="mt-5 text-base leading-7 text-neutral-600">
+        <p className="mt-5 text-base leading-7 text-slate-300">
           This template starts with a local demo selector so projects can wire
           routes, menus, rules, and tests before live auth is connected. Replace
           the demo resolver with Firebase Auth custom claims during project setup.
@@ -27,10 +27,10 @@ export function LoginPage() {
               key={item.level}
               type="button"
               onClick={() => setLevel(item.level)}
-              className={`border p-5 text-left transition-colors ${
+              className={`rounded-2xl border p-5 text-left transition-colors ${
                 level === item.level
-                  ? 'border-neutral-950 bg-neutral-950 text-white'
-                  : 'border-neutral-200 bg-white text-neutral-950 hover:bg-neutral-100'
+                  ? 'border-violet-400/30 bg-white/10 text-white shadow-[0_10px_30px_rgba(139,92,246,0.12)]'
+                  : 'border-white/10 bg-white/5 text-slate-100 hover:bg-white/8'
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -39,43 +39,43 @@ export function LoginPage() {
                 </h2>
                 <span className="text-sm font-medium">{item.account}</span>
               </div>
-              <p className={`mt-3 text-sm leading-6 ${level === item.level ? 'text-neutral-200' : 'text-neutral-600'}`}>
+              <p className={`mt-3 text-sm leading-6 ${level === item.level ? 'text-slate-200' : 'text-slate-400'}`}>
                 {item.description}
               </p>
             </button>
           ))}
         </div>
 
-        <aside className="border border-neutral-200 bg-white p-5">
-          <h2 className="text-lg font-semibold text-neutral-950">Current state</h2>
+        <aside className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <h2 className="text-lg font-semibold text-white">Current state</h2>
           <dl className="mt-4 space-y-3 text-sm">
             <div>
-              <dt className="font-medium text-neutral-500">Level</dt>
-              <dd className="text-neutral-950">{level}</dd>
+              <dt className="font-medium text-slate-400">Level</dt>
+              <dd className="text-white">{level}</dd>
             </div>
             <div>
-              <dt className="font-medium text-neutral-500">Label</dt>
-              <dd className="text-neutral-950">{definition.label}</dd>
+              <dt className="font-medium text-slate-400">Label</dt>
+              <dd className="text-white">{definition.label}</dd>
             </div>
             <div>
-              <dt className="font-medium text-neutral-500">Login</dt>
-              <dd className="text-neutral-950">{definition.loginState}</dd>
+              <dt className="font-medium text-slate-400">Login</dt>
+              <dd className="text-white">{definition.loginState}</dd>
             </div>
             <div>
-              <dt className="font-medium text-neutral-500">MFA guidance</dt>
-              <dd className="text-neutral-950">{capabilities.requiresMfa ? 'Required' : 'Optional'}</dd>
+              <dt className="font-medium text-slate-400">MFA guidance</dt>
+              <dd className="text-white">{capabilities.requiresMfa ? 'Required' : 'Optional'}</dd>
             </div>
           </dl>
         </aside>
       </div>
 
-      <div className="mt-10 border border-neutral-200 bg-white p-5">
-        <h2 className="text-lg font-semibold text-neutral-950">Standard test accounts</h2>
+      <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-5">
+        <h2 className="text-lg font-semibold text-white">Standard test accounts</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {TEST_ACCOUNTS.map((account) => (
-            <div key={account.email} className="border border-neutral-200 p-4">
-              <p className="text-sm font-semibold text-neutral-950">{account.email}</p>
-              <p className="mt-2 text-sm text-neutral-600">
+            <div key={account.email} className="rounded-2xl border border-white/10 bg-slate-950/55 p-4">
+              <p className="text-sm font-semibold text-white">{account.email}</p>
+              <p className="mt-2 text-sm text-slate-400">
                 Level {account.level} / {account.role}
               </p>
             </div>

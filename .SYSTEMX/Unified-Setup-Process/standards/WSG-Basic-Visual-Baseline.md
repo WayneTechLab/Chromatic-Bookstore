@@ -1,7 +1,9 @@
 # WSG Basic Visual Baseline
 
 The default generated app starts intentionally plain so each project can add its
-own brand later.
+own brand later. Once a project adopts a branded storefront system, keep that
+project-specific look in the generated app files and reflect the decision in
+the `.SYSTEMX` handoff docs.
 
 ## Color Rule
 
