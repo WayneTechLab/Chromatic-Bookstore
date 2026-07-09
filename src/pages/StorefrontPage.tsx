@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
+  Award,
+  BookOpen,
   CheckCircle2,
   CreditCard,
+  Download,
   FileUp,
   Filter,
   Heart,
-  LayoutDashboard,
   Lock,
   Mail,
   Search,
@@ -14,6 +16,7 @@ import {
   ShieldCheck,
   ShoppingCart,
   Sparkles,
+  Truck,
   UploadCloud,
 } from 'lucide-react'
 import { useAccountLevel } from '@/auth/useAccountLevel'
@@ -29,17 +32,20 @@ type Product = {
   license: string
   description: string
   status: 'Live' | 'Draft' | 'Review'
+  badge: string
+  accent: string
+  coverPosition: string
 }
 
 const products: Product[] = [
-  { id: 'kids-safari', title: 'Cute Safari Animals Pack', author: 'ArtbyLucy', price: 4.99, category: 'Kids', pages: 15, license: 'Personal PDF', description: 'Bold animal outlines for early creative play.', status: 'Live' },
-  { id: 'magic-castles', title: 'Fairytale Castles & Dragons', author: 'Ink & Quill Studios', price: 5.5, category: 'Kids', pages: 20, license: 'Personal PDF', description: 'Castles, smiling dragons, and starry skies.', status: 'Live' },
-  { id: 'anime-techwear', title: 'Anime Legends Techwear', author: 'Hiroshi Sato', price: 12.5, category: 'Teens', pages: 25, license: 'Personal PDF', description: 'High contrast character sheets with modern style.', status: 'Live' },
-  { id: 'vaporwave-futures', title: 'Vaporwave Neon Futures', author: 'SynthWave Studio', price: 14.5, category: 'Teens', pages: 20, license: 'Personal PDF', description: 'Retro grids, cassettes, chrome, and neon horizons.', status: 'Review' },
-  { id: 'mandala-master', title: 'Mandala Meditation Masterpieces', author: 'ZenFlow Artistry', price: 10.99, category: 'Adults', pages: 40, license: 'Personal PDF', description: 'Intricate geometric mandalas for focus and calm.', status: 'Live' },
-  { id: 'city-skylines', title: 'Architectural Wonders & Skylines', author: 'ArchLine Designs', price: 15.99, category: 'Adults', pages: 25, license: 'Personal PDF', description: 'Landmarks, streets, and architectural detail.', status: 'Draft' },
-  { id: 'pro-svg-mandala', title: 'Pro Geometric Mandala SVGs', author: 'Master Vector', price: 49.99, category: 'Pro', pages: 50, license: 'Commercial SVG/PDF', description: 'Layered SVG source files with commercial license.', status: 'Live' },
-  { id: 'steampunk-blueprints', title: 'Steampunk Blueprint Schematics', author: 'Cogs & Copper', price: 29.5, category: 'Pro', pages: 10, license: 'Commercial PDF/PNG', description: 'Printable airship, gear, and machinery layouts.', status: 'Live' },
+  { id: 'kids-safari', title: 'Cute Safari Animals Pack', author: 'ArtbyLucy', price: 4.99, category: 'Kids', pages: 15, license: 'Personal PDF', description: 'Bold animal outlines for early creative play.', status: 'Live', badge: 'Starter favorite', accent: 'from-emerald-300 to-cyan-300', coverPosition: '0% 0%' },
+  { id: 'magic-castles', title: 'Fairytale Castles & Dragons', author: 'Ink & Quill Studios', price: 5.5, category: 'Kids', pages: 20, license: 'Personal PDF', description: 'Castles, smiling dragons, and starry skies.', status: 'Live', badge: 'Giftable', accent: 'from-rose-300 to-amber-200', coverPosition: '0% 0%' },
+  { id: 'anime-techwear', title: 'Anime Legends Techwear', author: 'Hiroshi Sato', price: 12.5, category: 'Teens', pages: 25, license: 'Personal PDF', description: 'High contrast character sheets with modern style.', status: 'Live', badge: 'Best seller', accent: 'from-cyan-300 to-blue-300', coverPosition: '100% 0%' },
+  { id: 'vaporwave-futures', title: 'Vaporwave Neon Futures', author: 'SynthWave Studio', price: 14.5, category: 'Teens', pages: 20, license: 'Personal PDF', description: 'Retro grids, cassettes, chrome, and neon horizons.', status: 'Review', badge: 'Fresh drop', accent: 'from-fuchsia-300 to-cyan-300', coverPosition: '100% 0%' },
+  { id: 'mandala-master', title: 'Mandala Meditation Masterpieces', author: 'ZenFlow Artistry', price: 10.99, category: 'Adults', pages: 40, license: 'Personal PDF', description: 'Intricate geometric mandalas for focus and calm.', status: 'Live', badge: 'Monthly pick', accent: 'from-violet-300 to-emerald-200', coverPosition: '0% 100%' },
+  { id: 'city-skylines', title: 'Architectural Wonders & Skylines', author: 'ArchLine Designs', price: 15.99, category: 'Adults', pages: 25, license: 'Personal PDF', description: 'Landmarks, streets, and architectural detail.', status: 'Draft', badge: 'Coming soon', accent: 'from-sky-300 to-slate-100', coverPosition: '0% 100%' },
+  { id: 'pro-svg-mandala', title: 'Pro Geometric Mandala SVGs', author: 'Master Vector', price: 49.99, category: 'Pro', pages: 50, license: 'Commercial SVG/PDF', description: 'Layered SVG source files with commercial license.', status: 'Live', badge: 'Commercial', accent: 'from-amber-200 to-lime-200', coverPosition: '100% 100%' },
+  { id: 'steampunk-blueprints', title: 'Steampunk Blueprint Schematics', author: 'Cogs & Copper', price: 29.5, category: 'Pro', pages: 10, license: 'Commercial PDF/PNG', description: 'Printable airship, gear, and machinery layouts.', status: 'Live', badge: 'Pro pack', accent: 'from-orange-200 to-cyan-200', coverPosition: '100% 100%' },
 ]
 
 const orders = [
@@ -55,7 +61,23 @@ function pageTitle(slug: string | undefined) {
 
 function ProductCard({ product }: { product: Product }) {
   return (
-    <article className="rounded-lg border border-white/10 bg-slate-950/65 p-4">
+    <article className="rounded-lg border border-white/10 bg-slate-950/65 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:border-cyan-300/30">
+      <div
+        className={`mb-4 aspect-[4/3] rounded-md bg-gradient-to-br ${product.accent} bg-cover p-4 text-slate-950 shadow-inner`}
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.04)), url('/media/chromatic-cover-sheet.png')`,
+          backgroundPosition: product.coverPosition,
+          backgroundSize: '210%',
+        }}
+      >
+        <div className="flex h-full flex-col justify-between rounded-md bg-white/12 p-1">
+          <span className="w-fit rounded-full bg-white/75 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em]">{product.badge}</span>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] opacity-70">{product.license}</p>
+            <p className="mt-1 text-xl font-black leading-tight">{product.title}</p>
+          </div>
+        </div>
+      </div>
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200">{product.category}</p>
@@ -73,10 +95,15 @@ function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="mt-5 flex items-center justify-between gap-3">
         <span className="text-xl font-black text-white">${product.price.toFixed(2)}</span>
-        <button className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-100">
-          <ShoppingCart className="h-4 w-4" />
-          Buy PDF
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="rounded-md border border-white/10 p-2 text-slate-200 hover:bg-white/10" title="Preview sample">
+            <Download className="h-4 w-4" />
+          </button>
+          <button className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-100">
+            <ShoppingCart className="h-4 w-4" />
+            Buy PDF
+          </button>
+        </div>
       </div>
     </article>
   )
@@ -259,57 +286,140 @@ function AdminDashboard({ view }: { view: 'inventory' | 'orders' | 'billing' }) 
   )
 }
 
-function Storefront() {
+function Storefront({ pageId }: { pageId?: string }) {
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState('All')
-  const filtered = products.filter((product) => {
+  const defaultCategory = pageId === 'genre-fantasy' || pageId === 'genre-biography'
+    ? 'Kids'
+    : pageId === 'genre-scifi' || pageId === 'genre-mystery'
+      ? 'Teens'
+      : pageId === 'genre-classics' || pageId === 'genre-history' || pageId === 'genre-poetry'
+        ? 'Adults'
+        : pageId === 'genre-dystopian'
+          ? 'Pro'
+          : 'All'
+  const [category, setCategory] = useState(defaultCategory)
+  const routeProducts = products.filter((product) => {
+    if (pageId === 'bestsellers') return ['anime-techwear', 'mandala-master', 'pro-svg-mandala', 'kids-safari'].includes(product.id)
+    if (pageId === 'newreleases') return ['vaporwave-futures', 'city-skylines', 'steampunk-blueprints', 'magic-castles'].includes(product.id)
+    if (pageId === 'bookofmonth') return product.id === 'mandala-master'
+    return true
+  })
+  const filtered = routeProducts.filter((product) => {
     const matchesCategory = category === 'All' || product.category === category
     const q = query.toLowerCase()
     const matchesQuery = !q || product.title.toLowerCase().includes(q) || product.author.toLowerCase().includes(q)
     return matchesCategory && matchesQuery
   })
+  const headline = pageId === 'bestsellers'
+    ? 'Best-selling printable art packs'
+    : pageId === 'newreleases'
+      ? 'Fresh art drops ready for download'
+      : pageId === 'bookofmonth'
+        ? 'Design collection of the month'
+        : 'Printable PDF coloring books ready to sell'
+  const subhead = pageId === 'bookofmonth'
+    ? 'A focused editorial pick with a clear buy path, license detail, and instant delivery promise.'
+    : 'Browse premium printable coloring packs, preview the license, and buy instant PDF downloads.'
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8">
-      <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
-        <aside className="space-y-5">
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-200">Chromatic Bookstore</p>
-            <h1 className="mt-3 text-4xl font-black text-white">Printable PDF coloring books ready to sell</h1>
-            <p className="mt-4 text-slate-300">Instant download products, commercial packs, admin CMS, and billing workflow surfaces in one app.</p>
-          </div>
-          <div className="grid gap-2">
-            <Link to="/admin" className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-3 font-bold text-slate-950">
-              <LayoutDashboard className="h-4 w-4" />
-              Admin Login
+      <div className="mb-8 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <div
+          className="relative min-h-96 overflow-hidden rounded-lg border border-white/10 bg-cover bg-center p-6"
+          style={{ backgroundImage: "url('/media/chromatic-hero-workspace.png')" }}
+        >
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,18,0.92),rgba(5,7,18,0.64)_48%,rgba(5,7,18,0.12))]" />
+          <div className="relative z-10 flex min-h-[21rem] flex-col justify-end">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-cyan-100">Chromatic Bookstore</p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl">{headline}</h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-100">{subhead}</p>
+          <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap">
+            <a href="#catalog" className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-5 py-3 font-bold text-slate-950">
+              <ShoppingCart className="h-4 w-4" />
+              Shop PDFs
+            </a>
+            <Link to="/bookofmonth" className="inline-flex items-center justify-center gap-2 rounded-md border border-white/20 bg-slate-950/35 px-5 py-3 font-bold text-white hover:bg-white/10">
+              <BookOpen className="h-4 w-4" />
+              Monthly pick
             </Link>
-            <Link to="/admin-inventory" className="inline-flex items-center justify-center gap-2 rounded-md border border-white/10 px-4 py-3 font-bold text-white hover:bg-white/10">
+            <Link to="/admin" className="inline-flex items-center justify-center gap-2 rounded-md border border-white/20 bg-slate-950/35 px-5 py-3 font-bold text-white hover:bg-white/10">
               <Settings className="h-4 w-4" />
-              Manage CMS
+              Admin
             </Link>
+          </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+            <div className="flex items-center gap-3">
+              <Award className="h-5 w-5 text-amber-200" />
+              <p className="font-black text-white">Selling flow</p>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {[
+                ['Discover', 'Search, category filter, and curated routes.'],
+                ['Evaluate', 'Pages, license, price, and sample preview.'],
+                ['Checkout', 'Stripe-ready buy buttons and receipts.'],
+                ['Deliver', 'Firebase Storage download links for PDFs.'],
+              ].map(([title, body]) => (
+                <div key={title} className="rounded-md border border-white/10 bg-slate-950/55 p-3">
+                  <p className="text-sm font-bold text-white">{title}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">{body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              ['18', 'live packs'],
+              ['300dpi', 'print ready'],
+              ['0 min', 'delivery'],
+            ].map(([value, label]) => (
+              <div key={label} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                <p className="text-xl font-black text-white">{value}</p>
+                <p className="mt-1 text-xs text-slate-400">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
+        <aside className="space-y-4">
+          <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+            <p className="font-bold text-white">Shop by audience</p>
+            <div className="mt-3 grid gap-2">
+              {['All', 'Kids', 'Teens', 'Adults', 'Pro'].map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setCategory(item)}
+                  className={`rounded-md px-3 py-2 text-left text-sm font-semibold ${category === item ? 'bg-white text-slate-950' : 'bg-slate-950/60 text-slate-300 hover:bg-white/10'}`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-            <p className="font-bold text-white">Backend readiness</p>
-            <ul className="mt-3 space-y-2 text-sm text-slate-300">
-              <li>Firebase Auth + MFA admin roles</li>
-              <li>Firestore product/order/customer collections</li>
-              <li>Storage PDF upload and download links</li>
-              <li>Stripe checkout and billing portal</li>
-            </ul>
+            <p className="font-bold text-white">Trust signals</p>
+            <div className="mt-3 space-y-3 text-sm text-slate-300">
+              <div className="flex gap-2"><Download className="mt-0.5 h-4 w-4 text-cyan-200" /> Instant PDF delivery</div>
+              <div className="flex gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 text-cyan-200" /> Secure checkout ready</div>
+              <div className="flex gap-2"><Truck className="mt-0.5 h-4 w-4 text-cyan-200" /> No physical shipping</div>
+            </div>
           </div>
         </aside>
 
-        <div>
+        <div id="catalog">
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <div className="relative min-w-64 flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search books, packs, or artists" className="w-full rounded-md border border-white/10 bg-slate-950/70 py-3 pl-10 pr-4 text-white outline-none focus:border-cyan-300/50" />
             </div>
-            <div className="flex items-center gap-2 rounded-md border border-white/10 bg-slate-950/70 px-3 py-2">
+            <div className="flex items-center gap-2 rounded-md border border-white/10 bg-slate-950/70 px-4 py-3 text-sm font-semibold text-slate-300">
               <Filter className="h-4 w-4 text-slate-400" />
-              <select value={category} onChange={(event) => setCategory(event.target.value)} className="bg-transparent text-sm font-semibold text-white outline-none">
-                {['All', 'Kids', 'Teens', 'Adults', 'Pro'].map((item) => <option key={item}>{item}</option>)}
-              </select>
+              {filtered.length} packs
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -372,5 +482,5 @@ export function StorefrontPage() {
     return <InfoPage title={pageTitle(pageId)} />
   }
 
-  return <Storefront />
+  return <Storefront pageId={pageId} />
 }
