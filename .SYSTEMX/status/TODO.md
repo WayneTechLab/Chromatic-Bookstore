@@ -5,9 +5,6 @@ Backlog for the generic template. Check items off or move to
 
 ## Next up
 
-- [ ] Replace demo Level 4/5 admin selector with Firebase Auth custom claims and MFA.
-- [ ] Verify admin PDF upload against Firebase Storage and Firestore `products`.
-- [ ] Verify customer checkout-intent records and download entitlement records before enabling live Stripe.
 - [ ] Add a Vitest + Playwright scaffold to `starter/` (currently playbook-only, Step 10)
 - [ ] Add an optional `functions/` skeleton to `starter/` for projects that want it (Step 06)
 - [ ] Provide a GitHub Actions deploy job example wired to `deploy.sh` (Step 09)

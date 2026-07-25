@@ -25,8 +25,6 @@ When updating behavior:
 
 - Update scripts and docs together.
 - Keep root app and starter aligned.
-- Mirror major branding shifts in both the root app and the `.SYSTEMX`
-  standards so the setup packet and runtime UI stay in sync.
 - Keep checks non-mutating unless the command clearly says it writes.
 - Keep production deploy behind preflight/security gates.
 - Record new standards in `.SYSTEMX`, then mirror public guidance in `wiki/`.

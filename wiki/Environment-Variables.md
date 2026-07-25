@@ -2,6 +2,14 @@
 
 There are **two tiers** of configuration. Never mix them.
 
+Chromatic Bookstore production defaults:
+
+```bash
+VITE_SITE_URL=https://chromatic-bookstore.web.app
+VITE_ENVIRONMENT=production
+VITE_FIREBASE_PROJECT_ID=chromatic-bookstore
+```
+
 ## 1. Client tier (`VITE_*`) — shipped to the browser, **public by design**
 
 These are bundled into the client and are safe to ship. Copy `.env.example` to
@@ -17,12 +25,13 @@ VITE_FIREBASE_APP_ID=
 VITE_FIREBASE_MEASUREMENT_ID=
 
 # Optional
+VITE_SITE_URL=                    # https://chromatic-bookstore.web.app in production
 VITE_FUNCTIONS_BASE_URL=          # callable/HTTP function host
 VITE_SENTRY_DSN=                  # monitoring (optional)
 VITE_ENVIRONMENT=development      # development | staging | production
 
 # Optional billing module
-VITE_STRIPE_PUBLISHABLE_KEY=
+VITE_STRIPE_PUBLISHABLE_KEY=      # pk_test_... until live payments are approved
 VITE_STRIPE_PRICE_*=              # one per price/SKU
 ```
 
@@ -90,3 +99,24 @@ The `.gitignore` is configured so real values never get committed:
 The baseline assumes `development` and `production`. Add `staging` via the
 Interview step (Step 01) if you want a preview tier. Drive behavior off
 `VITE_ENVIRONMENT` in the client and per-environment secrets on the server.
+
+## Account levels
+
+Firebase custom claims should use:
+
+```json
+{
+  "level": 5,
+  "role": "owner"
+}
+```
+
+The browser UI falls back to local demo storage key `wsg.demo.accountLevel` only
+when Firebase has no valid `level` claim. Production authorization must rely on
+Firebase custom claims, Firestore rules, Storage rules, and MFA policy.
+
+## Generated book files
+
+Generated PDFs and temporary page-rendering assets live under `output/` and
+`tmp/`. They are intentionally ignored by Git and should be uploaded to Google
+Drive or Firebase Storage instead of committed.

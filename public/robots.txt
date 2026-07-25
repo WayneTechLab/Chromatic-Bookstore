@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin-inventory
+Disallow: /admin-orders
+Disallow: /admin-billing
+
+Sitemap: https://chromatic-bookstore.web.app/sitemap.xml

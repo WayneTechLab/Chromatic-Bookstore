@@ -1,64 +1,51 @@
-# WebApp Stack G One Point Zero — Wiki
+# Chromatic Bookstore Wiki
 
-Welcome to the **WebApp Stack G One Point Zero** wiki — the deep-dive home for the
-reusable, enterprise-grade blueprint for spinning up **TypeScript + React + Vite +
-Firebase + Stripe** web apps the same way, every time.
+Welcome to the **Chromatic Bookstore** wiki. This repo is now a branded
+printable-coloring-book ecommerce storefront backed by React, Vite, Firebase,
+Stripe test-mode readiness, Google Drive PDF production, and the `.SYSTEMX`
+operational layer.
 
-> The repository is **two things at once**: a runnable starter app (the repo root)
-> and a full, ordered setup playbook (`.SYSTEMX/Template/`). This wiki documents
-> both.
+> The repo is both the customer-facing Chromatic Bookstore app and a
+> `.SYSTEMX`-managed production workspace. The app code lives at the repo root;
+> setup, deployment, account-level policy, and operating runbooks live under
+> `.SYSTEMX/`.
 
 ## Start here
 
-| If you want to… | Go to |
+| If you want to... | Go to |
 | --- | --- |
-| Get a running app in minutes | **[Quick Start](Quick-Start)** |
-| Use the template and `.SYSTEMX` together from scratch to production | **[User Ingest & Production Setup](User-Ingest-and-Production-Setup)** |
-| Understand the tech choices | **[Architecture & Stack](Architecture-and-Stack)** |
-| Know where everything lives | **[Project Structure](Project-Structure)** |
-| Wire up Firebase / config | **[Environment Variables](Environment-Variables)** |
-| Ship safely | **[Security](Security)** |
-| Do the full guided build | **[Setup Playbook](Setup-Playbook)** |
-| Go live | **[Deployment](Deployment)** |
-| Add tests | **[Testing & QA](Testing-and-QA)** |
+| Run or preview the app | **[Quick Start](Quick-Start)** |
+| Understand the stack | **[Architecture & Stack](Architecture-and-Stack)** |
+| Wire Firebase, Stripe, and site URLs | **[Environment Variables](Environment-Variables)** |
+| Review account levels and admin protection | **[Security](Security)** |
+| Deploy production safely | **[Deployment](Deployment)** |
+| Follow the full `.SYSTEMX` setup flow | **[Setup Playbook](Setup-Playbook)** |
+| Keep tests and QA aligned | **[Testing & QA](Testing-and-QA)** |
 | Common questions | **[FAQ](FAQ)** |
 
-## What is this?
+## Product direction
 
-A **portable golden path**. Drop it into any new repository (or click *Use this
-template*) and an engineer — or an AI agent — follows the steps in order to stand
-up a production-ready web application from a bare machine to a deployed,
-monitored, billing-enabled product.
+Chromatic Bookstore is focused on selling printable coloring-book PDFs:
 
-It is intentionally **generic**: no business names, no hard-coded project IDs, no
-customer data. Everything project-specific is collected during the **Interview**
-step and the first-time intake packet, then injected into generated files.
+- Public storefront and route-aware collections
+- Coloring-book catalog cards with price, license, pages, preview, and checkout buttons
+- Admin/CMS/CRM/Billing dashboards for PDF upload, customer operations, orders, and Stripe test-mode billing drafts
+- Firebase Google login plus `.SYSTEMX` Level 0-5 account behavior
+- SEO, sitemap, robots, manifest, and social preview image for production sharing
 
-## Two ways to use it
+## Operational rule
 
-1. **⚡ Fast start** — the repo root is a runnable app. `npm install && npm run dev`
-   and you have a working React + Firebase site (it boots even before Firebase is
-   configured).
-2. **🧭 Full playbook** — `.SYSTEMX/Unified-Setup-Process/` defines editions,
-   intake files, Level 0-5 accounts, and Unified Login; `.SYSTEMX/Template/`
-   remains the legacy golden-path detail flow (`steps/00` → `steps/12`).
+Preserve the bookstore brand in public UI. Wayne Tech Lab LLC is provenance only
+and belongs in the quiet footer/product notice, not the top nav or hero.
 
-## The golden rule
+## Production posture
 
-> **One step at a time, in order.** Each step states its goal and preconditions,
-> prompts for inputs, performs the work, and ends with a **verification gate** you
-> must pass before advancing. Later steps depend on artifacts (env vars, project
-> IDs, price IDs) produced earlier.
+- Firebase project: `chromatic-bookstore`
+- Production URL: `https://chromatic-bookstore.web.app`
+- Stripe: test/demo mode until real products, webhooks, fulfillment, and support policy are verified
+- Large generated PDFs: stored in Google Drive, not committed to GitHub
 
-## First-time intake
+## `.SYSTEMX` status
 
-New projects pause early so the human can fill
-`.SYSTEMX/Unified-Setup-Process/intake/*.md`, then re-inject
-`06-AI-REINJECTION-PROMPT.md` into the AI/code tooling session.
-
-For the complete operator flow, use **[User Ingest & Production Setup](User-Ingest-and-Production-Setup)**.
-
-## Versioning
-
-`G One Point Zero` = **Generation 1.0**. Bump the generation for a breaking change
-to the step order or baseline stack; patch individual step files freely.
+`.SYSTEMX` was refreshed from the `WayneTechLab/webapp-stack-g1` template source
+and then re-layered with Chromatic-specific production deploy safeguards.

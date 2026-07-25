@@ -1,9 +1,9 @@
 {
-  "name": "webapp-stack-g1",
+  "name": "chromatic-bookstore",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "WebApp Stack G One Point Zero — TS + React + Vite + Tailwind + Firebase starter template.",
+  "description": "Chromatic Bookstore printable coloring-book storefront with React, Vite, Firebase, Stripe test-mode scaffolding, and .SYSTEMX operations.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b --noCheck && vite build",
@@ -14,6 +14,9 @@
     "emulators": "npx --yes firebase-tools emulators:start",
     "emulators:export": "npx --yes firebase-tools emulators:start --export-on-exit=.emulator-data --import=.emulator-data",
     "deploy": "bash .SYSTEMX/scripts/deploy.sh",
+    "deploy:production:preflight": "bash .SYSTEMX/scripts/deploy.sh --production --preflight",
+    "deploy:production:hosting": "bash .SYSTEMX/scripts/deploy.sh hosting --production --project chromatic-bookstore",
+    "deploy:production:rules": "bash .SYSTEMX/scripts/deploy.sh rules --production --project chromatic-bookstore --skip-build",
     "system:audit": "bash .SYSTEMX/scripts/system-audit.sh",
     "sync:system": "bash .SYSTEMX/wsg-agi.sh",
     "sync:system:check": "bash .SYSTEMX/wsg-agi.sh --check",

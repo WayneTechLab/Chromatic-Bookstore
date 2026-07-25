@@ -1,7 +1,7 @@
 # Deployment
 
-Ship the production build to **Firebase Hosting** (and Functions/rules), apply
-security headers, and run a post-deploy smoke test.
+Ship Chromatic Bookstore to **Firebase Hosting** on the `chromatic-bookstore`
+project, apply security headers, and run a post-deploy smoke test.
 
 > Detailed source:
 > [Step 11 — Build & Deploy](https://github.com/WayneTechLab/webapp-stack-g1/blob/main/.SYSTEMX/Template/steps/11-build-deploy.md).
@@ -49,8 +49,9 @@ bash .SYSTEMX/scripts/deploy.sh --project my-id  # override Firebase project
 ## Prerequisites
 
 - Firebase CLI: `npx --yes firebase-tools login` or a global `firebase` install
-- A Firebase project, and `.firebaserc` pointing at it (`npx --yes firebase-tools use --add`).
+- `.firebaserc` default project must be `chromatic-bookstore`.
 - A green build locally (`npm run build`).
+- Stripe must stay in test mode unless the operator intentionally passes the live-key override.
 
 ## One-time setup
 
@@ -67,17 +68,21 @@ npx --yes firebase-tools use --add        # select/create your project
 ```bash
 npm run build
 
-# Preferred template deploy path:
-bash .SYSTEMX/scripts/deploy.sh hosting --dry-run
-bash .SYSTEMX/scripts/deploy.sh hosting --project your-firebase-project-id
+# Preferred Chromatic production path:
+npm run deploy:production:preflight
+npm run deploy:production:hosting
 ```
 
-With the full playbook (Functions enabled), deploy everything:
+With rules included:
 
 ```bash
-bash .SYSTEMX/scripts/deploy.sh app --project your-firebase-project-id
-bash .SYSTEMX/scripts/deploy.sh rules --project your-firebase-project-id
+npm run deploy:production:rules
 ```
+
+Production mode sets `VITE_ENVIRONMENT=production`, applies
+`VITE_SITE_URL=https://chromatic-bookstore.web.app`, confirms SEO/share assets,
+checks required dependencies, locks the Firebase target, and blocks accidental
+`pk_live_` Stripe usage unless `--allow-live-stripe` is explicitly provided.
 
 ## Custom domain
 
@@ -87,7 +92,7 @@ Verify the HTTPS certificate is provisioned **before** announcing.
 ## Post-deploy smoke test
 
 ```bash
-URL="https://<your-project>.web.app"   # or your custom domain
+URL="https://chromatic-bookstore.web.app"
 
 # Headers applied?
 curl -sI "$URL" | grep -i strict-transport-security
@@ -102,8 +107,11 @@ curl -sI "$URL" | grep -i content-security-policy
 - [ ] **HSTS + CSP** present on the live response (curl checks above).
 - [ ] Deployed **security rules** match the repo (no drift).
 - [ ] **App Check** enforcement enabled for production backends.
-- [ ] Stripe switched to **live** keys only after a passing test-mode smoke.
+- [ ] Stripe remains **test** until PDF fulfillment, webhooks, refunds/support,
+      and Level 4/5 claims are verified.
 - [ ] No `.env*` / secret files bundled into `dist/`.
+- [ ] Admin routes remain `noindex,nofollow`.
+- [ ] Public metadata uses `Chromatic Bookstore` and the coloring-book hero image.
 
 See **[Security](Security)** for the full baseline.
 

@@ -1,0 +1,17 @@
+{
+  "name": "Chromatic Bookstore",
+  "short_name": "Chromatic",
+  "description": "A digital bookstore for curated printable coloring books, monthly editorial picks, and creator-first licensing.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050707",
+  "theme_color": "#050707",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -11,14 +11,14 @@ export function ContactPage() {
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-16">
-      <p className="text-sm font-semibold uppercase tracking-[0.35em] text-fuchsia-200/70">
+      <p className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200/70">
         Contact
       </p>
       <h1 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
         Reach the Chromatic Bookstore team.
       </h1>
       <p className="mt-5 text-lg leading-8 text-slate-300">
-        This form keeps the same visual treatment as the rest of the storefront
+        This form keeps the same visual treatment as the coloring book storefront
         while remaining ready for a backend or email service.
       </p>
 
@@ -61,7 +61,7 @@ export function ContactPage() {
           </div>
           <button
             type="submit"
-            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-violet-100"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100"
           >
             <Send className="h-4 w-4" /> Send message
           </button>

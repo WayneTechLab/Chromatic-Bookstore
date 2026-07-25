@@ -7,6 +7,7 @@ import {
 } from '@/auth/accountLevels'
 
 const STORAGE_KEY = 'wsg.demo.accountLevel'
+const ACCOUNT_LEVEL_EVENT = 'wsg.demo.accountLevel.change'
 
 function readInitialLevel(): AccountLevel {
   if (typeof window === 'undefined') return 0
@@ -16,6 +17,20 @@ function readInitialLevel(): AccountLevel {
 
 export function useAccountLevel() {
   const [level, setLevelState] = useState<AccountLevel>(readInitialLevel)
+
+  useEffect(() => {
+    function syncLevel() {
+      setLevelState(readInitialLevel())
+    }
+
+    window.addEventListener('storage', syncLevel)
+    window.addEventListener(ACCOUNT_LEVEL_EVENT, syncLevel)
+
+    return () => {
+      window.removeEventListener('storage', syncLevel)
+      window.removeEventListener(ACCOUNT_LEVEL_EVENT, syncLevel)
+    }
+  }, [])
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, String(level))
@@ -28,6 +43,11 @@ export function useAccountLevel() {
     level,
     definition,
     capabilities,
-    setLevel: (nextLevel: AccountLevel) => setLevelState(normalizeAccountLevel(nextLevel)),
+    setLevel: (nextLevel: AccountLevel) => {
+      const normalized = normalizeAccountLevel(nextLevel)
+      setLevelState(normalized)
+      window.localStorage.setItem(STORAGE_KEY, String(normalized))
+      window.dispatchEvent(new Event(ACCOUNT_LEVEL_EVENT))
+    },
   }
 }

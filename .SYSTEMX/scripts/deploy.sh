@@ -17,6 +17,9 @@
 #   bash .SYSTEMX/scripts/deploy.sh --dry-run       # validate deploy command without shipping
 #   bash .SYSTEMX/scripts/deploy.sh --check         # deployment health/check info
 #   bash .SYSTEMX/scripts/deploy.sh --rollback-info # print safe rollback commands
+#   bash .SYSTEMX/scripts/deploy.sh --production --preflight
+#   bash .SYSTEMX/scripts/deploy.sh hosting --production --project chromatic-bookstore
+#   bash .SYSTEMX/scripts/deploy.sh --allow-live-stripe # only when live Stripe is intentionally approved
 #   bash .SYSTEMX/scripts/deploy.sh --bg            # run deploy in background
 #   bash .SYSTEMX/scripts/deploy.sh --fast          # skip optional tests/security
 #   bash .SYSTEMX/scripts/deploy.sh --fix           # eslint --fix before build
@@ -37,6 +40,8 @@ CHANGELOG_FILE="$VERSION_DIR/CHANGELOG.md"
 DEPLOY_FILE="$VERSION_DIR/deploy-count.txt"
 VERSION_FILE="$VERSION_DIR/app-version.txt"
 VERSION_JSON="$VERSION_DIR/version.json"
+EXPECTED_FIREBASE_PROJECT="${EXPECTED_FIREBASE_PROJECT:-chromatic-bookstore}"
+PRODUCTION_SITE_URL="${PRODUCTION_SITE_URL:-https://chromatic-bookstore.web.app}"
 cd "$ROOT_DIR"
 
 # Load local secrets if present (never committed).
@@ -48,6 +53,7 @@ done
 # Defaults
 DO_TYPECHECK=1; DO_LINT=1; DO_FIX=0; DO_TESTS=1; DO_SECURITY=1; DO_BUILD=1
 DO_PUSH=1; DO_DEPLOY=1; OPEN_BROWSER=0; PRECHECK_ONLY=0; DRY_RUN=0; BG_MODE=0; HEALTH_CHECK=0; ROLLBACK_INFO=0
+PRODUCTION_MODE=0; ALLOW_LIVE_STRIPE=0
 FIREBASE_PROJECT=""; BUMP_KIND=""
 TARGET="all"
 
@@ -74,6 +80,8 @@ while [[ $# -gt 0 ]]; do
     --dry-run) DRY_RUN=1; PRECHECK_ONLY=1; DO_PUSH=0; DO_DEPLOY=0; OPEN_BROWSER=0; shift;;
     --check) HEALTH_CHECK=1; DO_PUSH=0; DO_DEPLOY=0; shift;;
     --rollback-info) ROLLBACK_INFO=1; DO_PUSH=0; DO_DEPLOY=0; shift;;
+    --production) PRODUCTION_MODE=1; shift;;
+    --allow-live-stripe) ALLOW_LIVE_STRIPE=1; shift;;
     --bg) BG_MODE=1; shift;;
     --fast) DO_TESTS=0; DO_SECURITY=0; shift;;
     --preflight) PRECHECK_ONLY=1; DO_PUSH=0; DO_DEPLOY=0; OPEN_BROWSER=0; shift;;
@@ -93,8 +101,72 @@ if [[ -z "$FIREBASE_PROJECT" || "$FIREBASE_PROJECT" == "your-firebase-project-id
   exit 1
 fi
 
+if [[ $PRODUCTION_MODE -eq 1 ]]; then
+  if [[ "$FIREBASE_PROJECT" != "$EXPECTED_FIREBASE_PROJECT" ]]; then
+    err "Production deploy target mismatch. Expected '$EXPECTED_FIREBASE_PROJECT' but got '$FIREBASE_PROJECT'."
+    err "Use --project $EXPECTED_FIREBASE_PROJECT or set EXPECTED_FIREBASE_PROJECT if this is intentional."
+    exit 1
+  fi
+
+  export NODE_ENV=production
+  export VITE_ENVIRONMENT=production
+  export VITE_SITE_URL="${VITE_SITE_URL:-$PRODUCTION_SITE_URL}"
+fi
+
+production_readiness_check() {
+  log "Production readiness checks"
+
+  [[ -f firebase.json ]] || { err "firebase.json missing"; exit 1; }
+  [[ -f .firebaserc ]] || { err ".firebaserc missing"; exit 1; }
+  [[ -f public/robots.txt ]] || { err "public/robots.txt missing"; exit 1; }
+  [[ -f public/sitemap.xml ]] || { err "public/sitemap.xml missing"; exit 1; }
+  [[ -f public/site.webmanifest ]] || { err "public/site.webmanifest missing"; exit 1; }
+  [[ -f public/media/chromatic-bookstore-hero-hd.png ]] || { err "Production share image missing: public/media/chromatic-bookstore-hero-hd.png"; exit 1; }
+
+  node -e "
+    const fs=require('fs');
+    const rc=JSON.parse(fs.readFileSync('.firebaserc','utf8'));
+    const fb=JSON.parse(fs.readFileSync('firebase.json','utf8'));
+    const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
+    const project=rc.projects && rc.projects.default;
+    if(project !== '$EXPECTED_FIREBASE_PROJECT') {
+      console.error('Expected .firebaserc default $EXPECTED_FIREBASE_PROJECT, got '+project);
+      process.exit(1);
+    }
+    if(!fb.hosting || fb.hosting.public !== 'dist') {
+      console.error('Firebase hosting public directory must be dist.');
+      process.exit(1);
+    }
+    for (const dep of ['firebase','@stripe/stripe-js','react','react-router-dom']) {
+      if(!pkg.dependencies || !pkg.dependencies[dep]) {
+        console.error('Missing production dependency: '+dep);
+        process.exit(1);
+      }
+    }
+  "
+
+  case "${VITE_STRIPE_PUBLISHABLE_KEY:-}" in
+    pk_live_*)
+      if [[ $ALLOW_LIVE_STRIPE -ne 1 ]]; then
+        err "Live Stripe publishable key detected. Re-run with --allow-live-stripe only after real products, webhooks, fulfillment, and support policy are approved."
+        exit 1
+      fi
+      warn "Live Stripe publishable key allowed by operator flag."
+      ;;
+    pk_test_*) log "Stripe publishable key is test-mode.";;
+    *) warn "No Stripe test publishable key loaded. Billing remains demo-only until VITE_STRIPE_PUBLISHABLE_KEY=pk_test_... is provided.";;
+  esac
+
+  if [[ "${VITE_FIREBASE_PROJECT_ID:-$FIREBASE_PROJECT}" != "$FIREBASE_PROJECT" ]]; then
+    err "VITE_FIREBASE_PROJECT_ID (${VITE_FIREBASE_PROJECT_ID:-unset}) does not match Firebase deploy project ($FIREBASE_PROJECT)."
+    exit 1
+  fi
+
+  log "Production env: VITE_ENVIRONMENT=${VITE_ENVIRONMENT:-unset} VITE_SITE_URL=${VITE_SITE_URL:-unset}"
+}
+
 if [[ $ROLLBACK_INFO -eq 1 ]]; then
-  PROJECT_LABEL="$FIREBASE_PROJECT"
+  PROJECT_LABEL="${FIREBASE_PROJECT:-$(node -e "try{console.log(require('./.firebaserc').projects.default)}catch(e){console.log('your-firebase-project-id')}" 2>/dev/null)}"
   cat <<EOF
 Safe Firebase Hosting rollback
   List releases: firebase hosting:releases:list --project $PROJECT_LABEL
@@ -121,12 +193,17 @@ RUN_LOG="$LOG_DIR/deploy-$RUN_ID.log"
 trap 'err "Deploy failed. See $RUN_LOG"' ERR
 exec > >(tee -a "$RUN_LOG") 2>&1
 log "=== WebApp Stack G1 deploy (run $RUN_ID target=$TARGET) ==="
+[[ $PRODUCTION_MODE -eq 1 ]] && log "Production mode enabled for project=$FIREBASE_PROJECT site=${VITE_SITE_URL:-$PRODUCTION_SITE_URL}"
 
 if [[ $HEALTH_CHECK -eq 1 ]]; then
   log "Health/check mode"
   npm run -s ci:security --if-present || true
   [[ -f firebase.json ]] && node -e "const j=require('./firebase.json'); console.log(JSON.stringify({hosting:!!j.hosting,firestore:!!j.firestore,storage:!!j.storage,functions:!!j.functions},null,2))"
   exit 0
+fi
+
+if [[ $PRODUCTION_MODE -eq 1 ]]; then
+  production_readiness_check
 fi
 
 # Optional version bump --------------------------------------------------------
@@ -188,7 +265,7 @@ HOSTING_PUBLIC=$(node -e "try{console.log(JSON.parse(require('fs').readFileSync(
 if [[ $DO_BUILD -eq 1 ]]; then
   log "Build"
   # Publish a public/version.json so the running app can detect new releases.
-  if [[ $PRECHECK_ONLY -eq 0 && -d "$ROOT_DIR/public" ]]; then
+  if [[ -d "$ROOT_DIR/public" ]]; then
     node -e "require('fs').writeFileSync('public/version.json', JSON.stringify({version:'$PKG_VERSION',buildTime:new Date().toISOString()},null,2)+'\n')" 2>/dev/null \
       && log "Wrote public/version.json → v$PKG_VERSION" || warn "Could not write public/version.json"
   fi
@@ -243,7 +320,7 @@ if [[ $DO_DEPLOY -eq 1 ]]; then
   " 2>/dev/null || echo hosting)
 
   FB_ARGS=("deploy" "--only" "$FB_TARGETS")
-  FB_ARGS+=("--project" "$FIREBASE_PROJECT")
+  [[ -n "$FIREBASE_PROJECT" ]] && FB_ARGS+=("--project" "$FIREBASE_PROJECT")
   [[ $DRY_RUN -eq 1 ]] && FB_ARGS+=("--dry-run")
   export FUNCTIONS_DISCOVERY_TIMEOUT="${FUNCTIONS_DISCOVERY_TIMEOUT:-60000}"
 
