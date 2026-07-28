@@ -1,5 +1,7 @@
 # Chromatic Bookstore Wiki
 
+**Current release:** `2.0.0` (Major)
+
 Welcome to the **Chromatic Bookstore** wiki. This repo is now a branded
 printable-coloring-book ecommerce storefront backed by React, Vite, Firebase,
 Stripe test-mode readiness, Google Drive PDF production, and the `.SYSTEMX`

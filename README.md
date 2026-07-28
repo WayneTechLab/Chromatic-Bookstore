@@ -1,4 +1,5 @@
 # Chromatic Bookstore
+**Release:** `2.0.0` (Major)
 
 Chromatic Bookstore is a production-leaning digital bookstore for printable coloring books, curated monthly drops, instant PDF delivery, and creator-friendly licensing. It runs on React, Vite, Firebase, Stripe test-mode tooling, and the updated `.SYSTEMX` operational layer.
 
